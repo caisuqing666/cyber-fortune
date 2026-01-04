@@ -1,0 +1,284 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 引入思源字体 */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@400;600&display=swap');
+
+/* 基础样式 */
+html {
+  font-family: 'Noto Sans SC', system-ui, sans-serif;
+}
+
+body {
+  color: #e8eaed;
+  background-color: #080b12;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* 防止iOS Safari的双击缩放 */
+  touch-action: manipulation;
+  /* 安全区域支持 */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 安全区域工具类 */
+.pb-safe {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+
+.pt-safe {
+  padding-top: calc(1rem + env(safe-area-inset-top));
+}
+
+/* 背景层 - 微妙的噪点纹理 + 墨雾 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    /* 极微弱的径向渐变，模拟远处星云 */
+    radial-gradient(ellipse at 20% 80%, rgba(212, 165, 116, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(26, 35, 50, 0.5) 0%, transparent 50%),
+    /* 噪点纹理 */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 卡片容器 - 精致玻璃态 */
+.card {
+  @apply bg-ink-deep/80 backdrop-blur-sm rounded-2xl;
+  @apply border border-ink-medium/50;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+/* 主按钮 - 克制的金色 */
+.btn-primary {
+  @apply relative px-8 py-4 rounded-xl font-medium;
+  @apply bg-ink-deep border border-accent-gold/30;
+  @apply text-moon-white;
+  @apply transition-all duration-500 ease-out;
+}
+
+.btn-primary:hover {
+  @apply border-accent-gold/60;
+  box-shadow: 0 0 30px rgba(212, 165, 116, 0.1);
+}
+
+.btn-primary:active {
+  @apply scale-[0.98];
+}
+
+/* 次要按钮 - 幽灵态 */
+.btn-ghost {
+  @apply px-6 py-3 rounded-lg;
+  @apply text-moon-gray hover:text-moon-white;
+  @apply transition-colors duration-300;
+}
+
+/* 选项按钮 */
+.option-btn {
+  @apply w-full p-5 rounded-xl text-left;
+  @apply bg-transparent border border-ink-medium/60;
+  @apply text-moon-white/90;
+  @apply transition-all duration-300 ease-out;
+}
+
+.option-btn:hover {
+  @apply bg-ink-light/30 border-ink-light;
+}
+
+.option-btn:active {
+  @apply scale-[0.99];
+}
+
+/* 选中态 - 左侧金线 */
+.option-btn.selected {
+  @apply border-l-2 border-l-accent-gold border-ink-medium/60;
+  @apply bg-ink-light/20;
+}
+
+/* 分割线 */
+.divider {
+  @apply h-px bg-gradient-to-r from-transparent via-ink-medium/50 to-transparent;
+}
+
+/* 标签 */
+.tag {
+  @apply inline-block px-4 py-1.5 rounded-full text-sm;
+  @apply bg-ink-medium/30 border border-ink-medium/50;
+  @apply text-moon-gray;
+}
+
+/* 印章效果 */
+.stamp {
+  @apply inline-block px-6 py-3 rounded-lg;
+  @apply border-2 border-accent-vermilion/70;
+  @apply text-accent-vermilion font-serif font-semibold tracking-wider;
+  transform: rotate(-8deg);
+}
+
+/* 文字呼吸动画 */
+.text-breathe {
+  animation: textBreathe 4s ease-in-out infinite;
+}
+
+@keyframes textBreathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* 涟漪效果 */
+.ripple-container {
+  @apply relative overflow-hidden;
+}
+
+.ripple {
+  @apply absolute rounded-full;
+  @apply bg-accent-gold/20;
+  animation: rippleExpand 2s ease-out forwards;
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* 墨迹晕染效果 */
+.ink-spread {
+  animation: inkSpread 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes inkSpread {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  50% {
+    filter: blur(5px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* 进度线 - 极细金线 */
+.progress-line {
+  @apply h-px bg-ink-medium/30 rounded-full overflow-hidden;
+}
+
+.progress-line-fill {
+  @apply h-full bg-gradient-to-r from-accent-gold/60 to-accent-gold/30;
+  @apply transition-all duration-500 ease-out;
+}
+
+/* 逐句淡入 */
+.fade-in-sequence > * {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.fade-in-sequence > *:nth-child(1) { animation-delay: 0.1s; }
+.fade-in-sequence > *:nth-child(2) { animation-delay: 0.3s; }
+.fade-in-sequence > *:nth-child(3) { animation-delay: 0.5s; }
+.fade-in-sequence > *:nth-child(4) { animation-delay: 0.7s; }
+.fade-in-sequence > *:nth-child(5) { animation-delay: 0.9s; }
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 打字机效果容器 */
+.typewriter {
+  overflow: hidden;
+  border-right: 2px solid transparent;
+  white-space: nowrap;
+  animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: rgba(212, 165, 116, 0.5); }
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 165, 116, 0.2);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 165, 116, 0.3);
+}
+
+/* 选中文字颜色 */
+::selection {
+  background: rgba(212, 165, 116, 0.2);
+  color: #e8eaed;
+}
+
+/* 移动端优化 */
+@media (max-width: 640px) {
+  /* 安全区域适配 */
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* 触摸优化 */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* 移动端字体优化 */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    font-size: 16px; /* 防止iOS Safari自动缩放 */
+  }
+  
+  /* 移动端交互按钮优化 - 通过类名控制，不强制所有按钮 */
+  
+  /* 移动端更好的滚动体验 */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
