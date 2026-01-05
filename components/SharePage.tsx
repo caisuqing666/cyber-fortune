@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ResultData, fortuneData } from "@/data/fortune";
 import * as htmlToImage from "html-to-image";
 
-type CardStyle = "minimal" | "ink" | "seal";
+type CardStyle = "ink" | "neon" | "cosmos";
 
 export function SharePage({
   result,
@@ -14,15 +14,15 @@ export function SharePage({
   result: ResultData;
   onNext: () => void;
 }) {
-  const [cardStyle, setCardStyle] = useState<CardStyle>("minimal");
+  const [cardStyle, setCardStyle] = useState<CardStyle>("ink");
   const [isSaving, setIsSaving] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const data = fortuneData[result.type];
 
   const cardStyles: { key: CardStyle; name: string }[] = [
-    { key: "minimal", name: "素雅" },
-    { key: "ink", name: "水墨" },
-    { key: "seal", name: "印章" },
+    { key: "ink", name: "墨染" },
+    { key: "neon", name: "霓虹" },
+    { key: "cosmos", name: "星尘" },
   ];
 
   const handleSaveImage = async () => {
@@ -31,7 +31,8 @@ export function SharePage({
     setIsSaving(true);
     try {
       const dataUrl = await htmlToImage.toPng(shareCardRef.current, {
-        pixelRatio: 2,
+        pixelRatio: 3,
+        quality: 1,
       });
       const link = document.createElement("a");
       link.download = "cyber-fortune.png";
@@ -59,19 +60,19 @@ export function SharePage({
         transition={{ delay: 0.6, duration: 1 }}
         className="text-center text-moon-mist text-sm mb-6"
       >
-        保存这张判词，方便随时自嘲
+        选一张你喜欢的，保存分享
       </motion.p>
 
       {/* 卡片样式切换 */}
-      <div className="flex justify-center gap-2 mb-6">
+      <div className="flex justify-center gap-3 mb-6">
         {cardStyles.map((style) => (
           <button
             key={style.key}
             onClick={() => setCardStyle(style.key)}
             className={`px-5 py-2.5 text-sm rounded-full transition-all duration-300 touch-manipulation min-h-[44px] flex items-center justify-center active:scale-95 ${
               cardStyle === style.key
-                ? "bg-ink-deep border border-accent-gold/40 text-accent-gold"
-                : "bg-transparent border border-ink-medium/40 text-moon-mist active:border-ink-light/60"
+                ? "bg-ink-deep border border-accent-gold/50 text-accent-gold shadow-[0_0_20px_rgba(212,165,116,0.15)]"
+                : "bg-transparent border border-ink-medium/40 text-moon-mist hover:border-ink-light/60"
             }`}
           >
             {style.name}
@@ -83,14 +84,14 @@ export function SharePage({
       <div className="flex justify-center mb-8">
         <div ref={shareCardRef}>
           <AnimatePresence mode="wait">
-            {cardStyle === "minimal" && (
-              <MinimalCard key="minimal" result={result} data={data} />
-            )}
             {cardStyle === "ink" && (
               <InkCard key="ink" result={result} data={data} />
             )}
-            {cardStyle === "seal" && (
-              <SealCard key="seal" result={result} data={data} />
+            {cardStyle === "neon" && (
+              <NeonCard key="neon" result={result} data={data} />
+            )}
+            {cardStyle === "cosmos" && (
+              <CosmosCard key="cosmos" result={result} data={data} />
             )}
           </AnimatePresence>
         </div>
@@ -104,11 +105,9 @@ export function SharePage({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="w-full py-4 rounded-xl bg-ink-deep border border-accent-gold/30 text-moon-white transition-all duration-300 hover:border-accent-gold/50 active:bg-ink-medium/20 disabled:opacity-50 touch-manipulation min-h-[52px] flex items-center justify-center text-base"
-          whileHover={{ boxShadow: "0 0 30px rgba(212, 165, 116, 0.08)" }}
-          whileTap={{ scale: 0.98 }}
+          className="w-full py-4 rounded-xl bg-gradient-to-r from-accent-gold/20 to-accent-gold/10 border border-accent-gold/40 text-accent-gold transition-all duration-300 hover:border-accent-gold/60 hover:from-accent-gold/25 hover:to-accent-gold/15 active:scale-[0.98] disabled:opacity-50 touch-manipulation min-h-[52px] flex items-center justify-center text-base font-medium"
         >
-          {isSaving ? "保存中..." : "保存这张判词"}
+          {isSaving ? "保存中..." : "保存图片"}
         </motion.button>
 
         <motion.button
@@ -119,58 +118,16 @@ export function SharePage({
           className="w-full py-3 text-moon-mist hover:text-moon-gray active:text-moon-white transition-colors text-base touch-manipulation min-h-[48px] flex items-center justify-center"
           whileTap={{ scale: 0.98 }}
         >
-          下一步
+          完成
         </motion.button>
       </div>
     </motion.div>
   );
 }
 
-// 素雅卡片 - 深色极简，纯粹文字
-function MinimalCard({
-  result,
-  data,
-}: {
-  result: ResultData;
-  data: (typeof fortuneData)["hidden_drain"];
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-          className="w-full max-w-[300px] sm:w-72 bg-[#0a0d14] rounded-2xl p-6 sm:p-8 border border-white/[0.03]"
-      style={{ aspectRatio: "3/4" }}
-    >
-      <div className="h-full flex flex-col justify-between">
-        {/* 顶部留白 + 细线 */}
-        <div className="pt-2">
-          <div className="w-8 h-px bg-white/10 mx-auto" />
-        </div>
-
-        {/* 主文 - 居中大面积 */}
-        <div className="flex-1 flex items-center justify-center py-6">
-          <p className="text-[15px] sm:text-[15px] leading-[1.85] sm:leading-[2] text-center text-white/80 font-light tracking-wide">
-            {result.scene}
-          </p>
-        </div>
-
-        {/* 底部信息 */}
-        <div className="space-y-4">
-          <div className="w-12 h-px bg-white/10 mx-auto" />
-          <div className="text-center">
-            <p className="text-[10px] text-white/30 tracking-[0.2em]">
-              {data.name}
-            </p>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// 水墨卡片 - 深色背景
+// ============================================
+// 墨染卡片 - 新中式美学
+// ============================================
 function InkCard({
   result,
   data,
@@ -180,49 +137,88 @@ function InkCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-          className="w-full max-w-[300px] sm:w-72 bg-gradient-to-b from-[#0d1117] to-[#161b22] rounded-2xl p-5 sm:p-6 border border-white/5"
-      style={{ aspectRatio: "3/4" }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="w-[280px] sm:w-[300px] relative overflow-hidden"
+      style={{
+        aspectRatio: "3/4",
+        background: "linear-gradient(180deg, #faf8f5 0%, #f3efe8 50%, #ebe5db 100%)",
+        borderRadius: "16px",
+      }}
     >
-      <div className="h-full flex flex-col justify-between">
-        {/* 顶部判词 */}
-        <div className="text-center">
-          <span className="font-serif text-sm sm:text-lg text-[#d4a574] tracking-wider">
-            「{result.judgement}」
+      {/* 宣纸纹理 */}
+      <div
+        className="absolute inset-0 opacity-30"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* 顶部装饰线 */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8b7355]/30 to-transparent" />
+
+      {/* 内容区 */}
+      <div className="relative h-full flex flex-col p-6 sm:p-7">
+        {/* 顶部标识 */}
+        <div className="flex justify-between items-start mb-auto">
+          <span className="text-[10px] tracking-[0.3em] text-[#8b7355]/60 font-light">
+            赛博问卜
           </span>
+          <div className="w-8 h-8 rounded-full border border-[#c45c48]/30 flex items-center justify-center">
+            <span className="text-[#c45c48]/70 text-xs font-serif">卜</span>
+          </div>
         </div>
 
-        {/* 主文 */}
-        <div className="flex-1 flex items-center justify-center py-4">
-          <p className="text-[13px] sm:text-sm leading-relaxed sm:leading-loose text-center text-gray-300 font-light px-2">
+        {/* 主内容区 - 居中 */}
+        <div className="flex-1 flex flex-col items-center justify-center py-4">
+          {/* 判词 - 大字突出 */}
+          <div className="mb-6 text-center">
+            <span
+              className="text-2xl sm:text-[26px] font-serif tracking-[0.15em] text-[#2a2520] leading-relaxed"
+              style={{ fontWeight: 500 }}
+            >
+              {result.judgement}
+            </span>
+          </div>
+
+          {/* 装饰分隔 */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-px bg-[#8b7355]/30" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#c45c48]/50" />
+            <div className="w-8 h-px bg-[#8b7355]/30" />
+          </div>
+
+          {/* 场景描述 */}
+          <p className="text-[13px] sm:text-sm leading-[2] text-center text-[#5a5248] font-light px-2 max-w-[240px]">
             {result.scene}
           </p>
         </div>
 
-        {/* 分割线 */}
-        <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
-
-        {/* 安抚语 */}
-        <div className="text-center mb-4">
-          <p className="text-xs text-gray-500 leading-relaxed px-2">
-            {result.comfort}
-          </p>
-        </div>
-
-        {/* 底部 */}
-        <div className="text-center">
-          <p className="text-[10px] text-gray-600 tracking-widest">赛博问卜</p>
+        {/* 底部印章 */}
+        <div className="flex justify-end">
+          <div
+            className="px-3 py-1.5 border border-[#c45c48]/60 rounded"
+            style={{ transform: "rotate(-6deg)" }}
+          >
+            <span className="text-[#c45c48] text-xs tracking-[0.2em] font-serif">
+              此劫已阅
+            </span>
+          </div>
         </div>
       </div>
+
+      {/* 底部装饰线 */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#8b7355]/20 to-transparent" />
     </motion.div>
   );
 }
 
-// 印章卡片 - 突出盖章
-function SealCard({
+// ============================================
+// 霓虹卡片 - 赛博朋克风格
+// ============================================
+function NeonCard({
   result,
   data,
 }: {
@@ -231,46 +227,214 @@ function SealCard({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-          className="w-full max-w-[300px] sm:w-72 bg-gradient-to-b from-[#1a1a2e] to-[#16213e] rounded-2xl p-5 sm:p-6 border border-white/5 relative overflow-hidden"
-      style={{ aspectRatio: "3/4" }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="w-[280px] sm:w-[300px] relative overflow-hidden"
+      style={{
+        aspectRatio: "3/4",
+        background: "linear-gradient(135deg, #0a0a0f 0%, #12121a 50%, #0d0d12 100%)",
+        borderRadius: "16px",
+        border: "1px solid rgba(212, 165, 116, 0.15)",
+      }}
     >
-      {/* 背景模糊文字 */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-5 blur-sm p-8">
-        <p className="text-lg text-white text-center leading-relaxed">
-          {result.scene}
-        </p>
+      {/* 网格背景 */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(212, 165, 116, 0.5) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(212, 165, 116, 0.5) 1px, transparent 1px)
+          `,
+          backgroundSize: "20px 20px",
+        }}
+      />
+
+      {/* 顶部光晕 */}
+      <div
+        className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 rounded-full opacity-20"
+        style={{
+          background: "radial-gradient(ellipse, rgba(212, 165, 116, 0.4) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* 左侧霓虹线 */}
+      <div className="absolute left-4 top-12 bottom-12 w-px bg-gradient-to-b from-transparent via-accent-gold/40 to-transparent" />
+
+      {/* 右侧霓虹线 */}
+      <div className="absolute right-4 top-12 bottom-12 w-px bg-gradient-to-b from-transparent via-[#c45c48]/40 to-transparent" />
+
+      {/* 内容区 */}
+      <div className="relative h-full flex flex-col p-6 sm:p-7">
+        {/* 顶部标签 */}
+        <div className="flex justify-center mb-auto">
+          <div className="px-4 py-1.5 rounded-full border border-accent-gold/30 bg-accent-gold/5">
+            <span className="text-[10px] tracking-[0.25em] text-accent-gold/80 uppercase">
+              {data.name}
+            </span>
+          </div>
+        </div>
+
+        {/* 主内容区 */}
+        <div className="flex-1 flex flex-col items-center justify-center py-6">
+          {/* 判词框 */}
+          <div
+            className="mb-6 px-5 py-3 rounded-lg border border-accent-gold/30 relative"
+            style={{
+              background: "linear-gradient(135deg, rgba(212, 165, 116, 0.08) 0%, rgba(212, 165, 116, 0.02) 100%)",
+              boxShadow: "0 0 30px rgba(212, 165, 116, 0.1), inset 0 0 20px rgba(212, 165, 116, 0.05)",
+            }}
+          >
+            {/* 角标装饰 */}
+            <div className="absolute -top-px -left-px w-3 h-3 border-t border-l border-accent-gold/50" />
+            <div className="absolute -top-px -right-px w-3 h-3 border-t border-r border-accent-gold/50" />
+            <div className="absolute -bottom-px -left-px w-3 h-3 border-b border-l border-accent-gold/50" />
+            <div className="absolute -bottom-px -right-px w-3 h-3 border-b border-r border-accent-gold/50" />
+
+            <span className="text-xl sm:text-[22px] font-medium tracking-wider text-moon-white">
+              {result.judgement}
+            </span>
+          </div>
+
+          {/* 场景描述 */}
+          <p className="text-[13px] leading-[1.9] text-center text-moon-gray/90 font-light px-3 max-w-[250px]">
+            {result.scene}
+          </p>
+        </div>
+
+        {/* 底部 */}
+        <div className="flex justify-between items-end">
+          <span className="text-[10px] text-moon-mist/50 tracking-wider">
+            #{result.tag}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1 h-1 rounded-full bg-accent-gold/60" />
+            <span className="text-[10px] tracking-[0.2em] text-accent-gold/60">
+              赛博问卜
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* 内容 */}
-      <div className="h-full flex flex-col items-center justify-center relative z-10">
-        {/* 标签 */}
-        <span className="text-xs text-gray-500 mb-6 tracking-wider">
-          {data.name}
-        </span>
+      {/* 底部光晕 */}
+      <div
+        className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-20 rounded-full opacity-15"
+        style={{
+          background: "radial-gradient(ellipse, rgba(196, 92, 72, 0.5) 0%, transparent 70%)",
+        }}
+      />
+    </motion.div>
+  );
+}
 
-        {/* 中央盖章 */}
-        <div
-          className="border-2 border-[#c45c48]/70 rounded-lg px-8 py-4 mb-6"
-          style={{ transform: "rotate(-8deg)" }}
-        >
-          <span className="text-xl sm:text-2xl font-serif font-semibold text-[#c45c48]/90 tracking-widest">
-            此劫已阅
+// ============================================
+// 星尘卡片 - 梦幻宇宙风格
+// ============================================
+function CosmosCard({
+  result,
+  data,
+}: {
+  result: ResultData;
+  data: (typeof fortuneData)["hidden_drain"];
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="w-[280px] sm:w-[300px] relative overflow-hidden"
+      style={{
+        aspectRatio: "3/4",
+        background: "linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%)",
+        borderRadius: "16px",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
+      }}
+    >
+      {/* 星星点缀 */}
+      <div className="absolute inset-0">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: Math.random() * 2 + 1 + "px",
+              height: Math.random() * 2 + 1 + "px",
+              top: Math.random() * 100 + "%",
+              left: Math.random() * 100 + "%",
+              opacity: Math.random() * 0.5 + 0.2,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* 主光晕 */}
+      <div
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full opacity-30"
+        style={{
+          background: "radial-gradient(ellipse, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.1) 40%, transparent 70%)",
+        }}
+      />
+
+      {/* 次光晕 */}
+      <div
+        className="absolute bottom-0 right-0 w-48 h-48 rounded-full opacity-20"
+        style={{
+          background: "radial-gradient(ellipse, rgba(236, 72, 153, 0.4) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* 内容区 */}
+      <div className="relative h-full flex flex-col p-6 sm:p-7">
+        {/* 顶部 */}
+        <div className="flex justify-between items-start mb-auto">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-violet-400/60" />
+            <span className="text-[10px] tracking-wider text-white/40">
+              {data.name}
+            </span>
+          </div>
+          <span className="text-[10px] tracking-[0.2em] text-white/30">
+            赛博问卜
           </span>
         </div>
 
-        {/* 标签 */}
-        <span className="text-xs text-gray-600 tracking-wider">
-          #{result.tag}
-        </span>
+        {/* 主内容区 */}
+        <div className="flex-1 flex flex-col items-center justify-center py-4">
+          {/* 判词 */}
+          <div className="mb-6 relative">
+            {/* 发光背景 */}
+            <div
+              className="absolute inset-0 blur-xl opacity-40"
+              style={{
+                background: "linear-gradient(135deg, rgba(139, 92, 246, 0.5) 0%, rgba(236, 72, 153, 0.3) 100%)",
+              }}
+            />
+            <h2 className="relative text-[22px] sm:text-2xl font-medium tracking-[0.1em] text-white text-center leading-relaxed">
+              {result.judgement}
+            </h2>
+          </div>
 
-        {/* 底部 */}
-        <p className="absolute bottom-6 text-[10px] text-gray-600 tracking-widest">
-          赛博问卜
-        </p>
+          {/* 装饰线 */}
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-12 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent" />
+            <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-violet-400 to-pink-400 opacity-70" />
+            <div className="w-12 h-px bg-gradient-to-r from-transparent via-pink-400/50 to-transparent" />
+          </div>
+
+          {/* 场景描述 */}
+          <p className="text-[13px] leading-[1.95] text-center text-white/70 font-light px-2 max-w-[250px]">
+            {result.scene}
+          </p>
+        </div>
+
+        {/* 底部安抚语 */}
+        <div className="text-center">
+          <p className="text-[11px] text-white/40 leading-relaxed px-4 italic">
+            「{result.comfort}」
+          </p>
+        </div>
       </div>
     </motion.div>
   );

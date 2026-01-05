@@ -33,8 +33,9 @@ State machine controlled by `page` state in `app/page.tsx`. All state is central
 ### Key Files
 - `app/page.tsx` - Main component, all state management and page routing
 - `data/fortune.ts` - All types, questions, result content, and helper functions
-- `components/` - 11 page/UI components (EntryPage, QuestionPage, ResultPage, SharePage, etc.)
-- `app/globals.css` - Custom CSS classes (`.cyber-btn`, `.cyber-card`, `.option-btn`) and animations
+- `components/` - 6 page components (EntryPage, QuestionPage, LoadingPage, ResultPage, SharePage, ExitPage)
+- `app/globals.css` - Custom CSS classes (`.card`, `.btn-primary`, `.option-btn`, `.stamp`) and animations
+- `tailwind.config.ts` - Custom color system with Chinese poetic names (ink, moon, accent)
 
 ### Scoring System
 - 3 questions, each option scores 0-2 points
@@ -45,7 +46,13 @@ State machine controlled by `page` state in `app/page.tsx`. All state is central
 - Each result type has arrays of judgements, scenes, comforts, and tags randomly selected
 
 ### Share Cards
-Three card styles in SharePage: SystemCard, StampCard, OnelinerCard. Uses html-to-image to export as PNG.
+Three card styles in SharePage: `minimal` (素雅), `ink` (水墨), `seal` (印章). Uses html-to-image to export as PNG.
+
+### Tailwind Color System
+Custom semantic colors defined in `tailwind.config.ts`:
+- `ink-*` (void/night/deep/medium/light) - Background layers
+- `moon-*` (white/gray/mist) - Text colors
+- `accent-*` (gold/vermilion) - Accent colors for highlights and stamps
 
 ### Build Configuration
 Static export mode (`output: 'export'` in next.config.js) - no API routes or SSR available.
