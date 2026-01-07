@@ -1,23 +1,34 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ResultData, fortuneData } from "@/data/fortune";
 import * as htmlToImage from "html-to-image";
 
 type CardStyle = "ink" | "neon" | "cosmos";
 
+interface SharePageProps {
+  result: ResultData;
+  onNext: () => void;
+}
+
 export function SharePage({
   result,
   onNext,
-}: {
-  result: ResultData;
-  onNext: () => void;
-}) {
+}: SharePageProps) {
   const [cardStyle, setCardStyle] = useState<CardStyle>("ink");
   const [isSaving, setIsSaving] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
   const shareCardRef = useRef<HTMLDivElement>(null);
   const data = fortuneData[result.type];
+
+  // 触觉反馈
+  const triggerHaptic = useCallback((type: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (typeof window === 'undefined' || !navigator.vibrate) return;
+    const patterns = { light: 10, medium: 30, heavy: 50 };
+    navigator.vibrate(patterns[type]);
+  }, []);
 
   const cardStyles: { key: CardStyle; name: string }[] = [
     { key: "ink", name: "墨染" },
@@ -25,7 +36,14 @@ export function SharePage({
     { key: "cosmos", name: "星尘" },
   ];
 
+  // 生成分享文案
+  const generateShareText = () => {
+    return `赛博问卜 | ${data.name}\n\n「${result.judgement}」\n\n${result.scene}\n\n#赛博问卜`;
+  };
+
+  // 保存图片
   const handleSaveImage = async () => {
+    triggerHaptic('medium');
     if (!shareCardRef.current || isSaving) return;
 
     setIsSaving(true);
@@ -42,6 +60,52 @@ export function SharePage({
       console.error("保存失败", error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // 复制文案
+  const handleCopyText = async () => {
+    triggerHaptic('light');
+    setIsCopying(true);
+    try {
+      await navigator.clipboard.writeText(generateShareText());
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    } catch (error) {
+      console.error("复制失败", error);
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
+  // 原生分享（移动端）
+  const handleNativeShare = async () => {
+    triggerHaptic('medium');
+    if (!shareCardRef.current) return;
+
+    try {
+      const dataUrl = await htmlToImage.toPng(shareCardRef.current, {
+        pixelRatio: 2,
+        quality: 0.9,
+      });
+
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], "cyber-fortune.png", { type: "image/png" });
+
+      if (navigator.share) {
+        await navigator.share({
+          title: '赛博问卜 - 我的精神状态',
+          text: generateShareText(),
+          files: [file],
+        });
+      } else {
+        // 不支持原生分享时，回退到复制文案
+        await navigator.clipboard.writeText(generateShareText());
+        setShowCopied(true);
+        setTimeout(() => setShowCopied(false), 2000);
+      }
+    } catch (error) {
+      console.error("分享失败", error);
     }
   };
 
@@ -68,7 +132,10 @@ export function SharePage({
         {cardStyles.map((style) => (
           <button
             key={style.key}
-            onClick={() => setCardStyle(style.key)}
+            onClick={() => {
+              triggerHaptic('light');
+              setCardStyle(style.key);
+            }}
             className={`px-5 py-2.5 text-sm rounded-full transition-all duration-300 touch-manipulation min-h-[44px] flex items-center justify-center active:scale-95 ${
               cardStyle === style.key
                 ? "bg-ink-deep border border-accent-gold/50 text-accent-gold shadow-[0_0_20px_rgba(212,165,116,0.15)]"
@@ -99,6 +166,7 @@ export function SharePage({
 
       {/* 按钮组 */}
       <div className="space-y-3">
+        {/* 保存图片按钮 */}
         <motion.button
           onClick={handleSaveImage}
           disabled={isSaving}
@@ -110,11 +178,49 @@ export function SharePage({
           {isSaving ? "保存中..." : "保存图片"}
         </motion.button>
 
+        {/* 复制文案按钮 */}
         <motion.button
-          onClick={onNext}
+          onClick={handleCopyText}
+          disabled={isCopying}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4, duration: 0.8 }}
+          transition={{ delay: 1.3, duration: 0.8 }}
+          className="w-full py-3.5 rounded-xl bg-ink-deep border border-ink-medium/50 text-moon-white transition-all duration-300 hover:border-ink-light/60 active:scale-[0.98] disabled:opacity-50 touch-manipulation min-h-[48px] flex items-center justify-center text-base"
+        >
+          {showCopied ? (
+            <span className="flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              已复制到剪贴板
+            </span>
+          ) : (
+            "复制文案"
+          )}
+        </motion.button>
+
+        {/* 原生分享按钮（移动端） */}
+        {typeof navigator !== 'undefined' && 'share' in navigator && typeof navigator.share === 'function' && (
+          <motion.button
+            onClick={handleNativeShare}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.4, duration: 0.8 }}
+            className="w-full py-3.5 rounded-xl bg-accent-vermilion/10 border border-accent-vermilion/30 text-accent-vermilion transition-all duration-300 hover:bg-accent-vermilion/20 active:scale-[0.98] touch-manipulation min-h-[48px] flex items-center justify-center text-base"
+          >
+            分享到社交媒体
+          </motion.button>
+        )}
+
+        {/* 完成按钮 */}
+        <motion.button
+          onClick={() => {
+            triggerHaptic('light');
+            onNext();
+          }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
           className="w-full py-3 text-moon-mist hover:text-moon-gray active:text-moon-white transition-colors text-base touch-manipulation min-h-[48px] flex items-center justify-center"
           whileTap={{ scale: 0.98 }}
         >

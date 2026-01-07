@@ -22,8 +22,21 @@ export interface ResultData {
   tag: string;
 }
 
-// 问题数据
-export const questions: Question[] = [
+// 快速模式问题（1题）
+export const quickQuestions: Question[] = [
+  {
+    id: 1,
+    question: "一句话形容现在的你？",
+    options: [
+      { text: "能卷，但不想卷了", score: 0 },
+      { text: "表面稳住，内心疯狂", score: 1 },
+      { text: "电量1%，信号也没了", score: 2 },
+    ],
+  },
+];
+
+// 完整模式问题（3题）
+export const fullQuestions: Question[] = [
   {
     id: 1,
     question: "早上闹钟响的那一刻，你脑子里在想什么？",
@@ -52,6 +65,27 @@ export const questions: Question[] = [
     ],
   },
 ];
+
+// 根据模式获取问题
+export function getQuestionsByMode(mode: 'quick' | 'full'): Question[] {
+  return mode === 'quick' ? quickQuestions : fullQuestions;
+}
+
+// 模式配置
+export type QuestionMode = 'quick' | 'full';
+
+export const modeConfig = {
+  quick: {
+    name: '快速模式',
+    description: '1 题，30 秒知晓结果',
+    questionCount: 1,
+  },
+  full: {
+    name: '完整模式',
+    description: '3 题，深入分析你的状态',
+    questionCount: 3,
+  },
+};
 
 // 结果类型定义
 export type ResultType = "hidden_drain" | "recovery" | "transition";

@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
 import {
-  questions,
+  getQuestionsByMode,
   fortuneData,
   getResultType,
   randomPick,
   type ResultType,
   type PageState,
   type ResultData,
+  type QuestionMode,
+  modeConfig,
 } from "@/data/fortune";
 
 import { EntryPage } from "@/components/EntryPage";
@@ -19,14 +21,45 @@ import { ResultPage } from "@/components/ResultPage";
 import { SharePage } from "@/components/SharePage";
 import { ExitPage } from "@/components/ExitPage";
 
+// 触觉反馈工具函数
+function useHaptic() {
+  const trigger = useCallback((type: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (typeof window === 'undefined' || !navigator.vibrate) return;
+
+    const patterns = {
+      light: 10,
+      medium: 30,
+      heavy: 50,
+    };
+
+    navigator.vibrate(patterns[type]);
+  }, []);
+
+  return trigger;
+}
+
 export default function CyberFortune() {
   const [page, setPage] = useState<PageState>("entry");
+  const [questionMode, setQuestionMode] = useState<QuestionMode>('full');
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [scores, setScores] = useState<number[]>([]);
   const [result, setResult] = useState<ResultData | null>(null);
+  const triggerHaptic = useHaptic();
+
+  // 获取当前模式的问题
+  const questions = getQuestionsByMode(questionMode);
+
+  // 开始测试
+  const handleStart = (mode: QuestionMode = 'full') => {
+    setQuestionMode(mode);
+    setCurrentQuestion(0);
+    setScores([]);
+    setPage("question");
+  };
 
   // 处理答案选择
   const handleAnswer = (score: number) => {
+    triggerHaptic('medium');
     const newScores = [...scores, score];
     setScores(newScores);
 
@@ -64,11 +97,12 @@ export default function CyberFortune() {
 
   // 处理后退
   const handleBack = () => {
+    triggerHaptic('light');
     if (currentQuestion > 0) {
       setCurrentQuestion(currentQuestion - 1);
-      setScores(scores.slice(0, scores.length - 1)); // 移除最后一个分数
+      setScores(scores.slice(0, scores.length - 1));
     } else {
-      setPage("entry"); // 如果在第一个问题，则回到入口页
+      setPage("entry");
     }
   };
 
@@ -76,7 +110,11 @@ export default function CyberFortune() {
     <div className="w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
         {page === "entry" && (
-          <EntryPage key="entry" onStart={() => setPage("question")} />
+          <EntryPage
+            key="entry"
+            onStart={handleStart}
+            modeConfig={modeConfig}
+          />
         )}
         {page === "question" && (
           <QuestionPage
@@ -96,6 +134,7 @@ export default function CyberFortune() {
             key="result"
             result={result}
             onNext={() => setPage("share")}
+            onRestart={restart}
           />
         )}
         {page === "share" && result && (

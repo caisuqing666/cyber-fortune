@@ -4,13 +4,17 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ResultData, fortuneData } from "@/data/fortune";
 
+interface ResultPageProps {
+  result: ResultData;
+  onNext: () => void;
+  onRestart: () => void;
+}
+
 export function ResultPage({
   result,
   onNext,
-}: {
-  result: ResultData;
-  onNext: () => void;
-}) {
+  onRestart,
+}: ResultPageProps) {
   const [showStamp, setShowStamp] = useState(false);
   const data = fortuneData[result.type];
 
@@ -115,21 +119,33 @@ export function ResultPage({
         </span>
       </motion.div>
 
-      {/* 继续按钮 */}
+      {/* 按钮组 */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.8, delay: 2.5 }}
+        transition={{ duration: 0.8, delay: 2.2 }}
+        className="space-y-3"
       >
+        {/* 继续按钮 */}
         <motion.button
           onClick={onNext}
           className="w-full py-4 rounded-xl bg-ink-deep border border-ink-medium/50 text-moon-white transition-all duration-300 hover:border-accent-gold/30 active:bg-ink-medium/20 touch-manipulation min-h-[52px] flex items-center justify-center text-base"
           whileHover={{ boxShadow: "0 0 30px rgba(212, 165, 116, 0.08)" }}
           whileTap={{ scale: 0.98 }}
         >
-          继续
+          生成专属卡片
+        </motion.button>
+
+        {/* 再测一次按钮 */}
+        <motion.button
+          onClick={onRestart}
+          className="w-full py-3 text-moon-mist hover:text-moon-gray active:text-moon-white transition-colors text-base touch-manipulation min-h-[48px] flex items-center justify-center"
+          whileTap={{ scale: 0.98 }}
+        >
+          再测一次
         </motion.button>
       </motion.div>
+
     </motion.div>
   );
 }

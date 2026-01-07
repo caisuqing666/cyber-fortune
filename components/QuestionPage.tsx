@@ -3,19 +3,37 @@
 import { motion } from "framer-motion";
 import { Question } from "@/data/fortune";
 
+interface QuestionPageProps {
+  question: Question;
+  questionNumber: number;
+  totalQuestions: number;
+  onAnswer: (score: number) => void;
+  onBack: () => void;
+}
+
 export function QuestionPage({
   question,
   questionNumber,
   totalQuestions,
   onAnswer,
   onBack,
-}: {
-  question: Question;
-  questionNumber: number;
-  totalQuestions: number;
-  onAnswer: (score: number) => void;
-  onBack: () => void;
-}) {
+}: QuestionPageProps) {
+  const handleOptionClick = (score: number) => {
+    // 触觉反馈
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(20);
+    }
+    onAnswer(score);
+  };
+
+  const handleBackClick = () => {
+    // 触觉反馈
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+    onBack();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -28,7 +46,7 @@ export function QuestionPage({
       <div className="flex items-center justify-between mb-4">
         {/* 返回按钮 */}
         <motion.button
-          onClick={onBack}
+          onClick={handleBackClick}
           className="text-moon-mist hover:text-moon-gray transition-colors text-base py-3 -ml-2 pl-2 pr-2 min-w-[80px] touch-manipulation active:text-moon-white"
           whileHover={{ x: -2 }}
           whileTap={{ scale: 0.98 }}
@@ -69,7 +87,7 @@ export function QuestionPage({
         {question.options.map((option, index) => (
           <motion.button
             key={index}
-            onClick={() => onAnswer(option.score)}
+            onClick={() => handleOptionClick(option.score)}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}

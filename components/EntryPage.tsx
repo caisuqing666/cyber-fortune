@@ -2,13 +2,40 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import type { QuestionMode } from "@/data/fortune";
 
-export function EntryPage({ onStart }: { onStart: () => void }) {
+interface ModeConfig {
+  quick: {
+    name: string;
+    description: string;
+    questionCount: number;
+  };
+  full: {
+    name: string;
+    description: string;
+    questionCount: number;
+  };
+}
+
+interface EntryPageProps {
+  onStart: (mode: QuestionMode) => void;
+  modeConfig: ModeConfig;
+}
+
+export function EntryPage({ onStart, modeConfig }: EntryPageProps) {
   const [isHolding, setIsHolding] = useState(false);
   const [progress, setProgress] = useState(0);
   const [ripples, setRipples] = useState<number[]>([]);
+  const [selectedMode, setSelectedMode] = useState<QuestionMode>('full');
   const holdTimer = useRef<NodeJS.Timeout | null>(null);
   const progressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // 触觉反馈
+  const triggerHaptic = (type: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (typeof window === 'undefined' || !navigator.vibrate) return;
+    const patterns = { light: 10, medium: 30, heavy: 50 };
+    navigator.vibrate(patterns[type]);
+  };
 
   const handlePressStart = () => {
     setIsHolding(true);
@@ -33,7 +60,8 @@ export function EntryPage({ onStart }: { onStart: () => void }) {
 
     // 2秒后触发
     holdTimer.current = setTimeout(() => {
-      onStart();
+      triggerHaptic('heavy');
+      onStart(selectedMode);
     }, 2000);
   };
 
@@ -46,6 +74,11 @@ export function EntryPage({ onStart }: { onStart: () => void }) {
     if (progressTimer.current) {
       clearInterval(progressTimer.current);
     }
+  };
+
+  const handleModeSelect = (mode: QuestionMode) => {
+    triggerHaptic('light');
+    setSelectedMode(mode);
   };
 
   useEffect(() => {
@@ -147,10 +180,41 @@ export function EntryPage({ onStart }: { onStart: () => void }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.8 }}
-          className="text-moon-mist text-sm mb-10 sm:mb-12 max-w-xs leading-relaxed px-2"
+        className="text-moon-mist text-sm mb-8 max-w-xs leading-relaxed px-2"
       >
         不是算命，是帮你骂得更精准
       </motion.p>
+
+      {/* 模式选择 */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+        className="flex gap-3 mb-8"
+      >
+        <button
+          onClick={() => handleModeSelect('quick')}
+          className={`px-4 py-2.5 rounded-full text-sm transition-all duration-300 touch-manipulation min-h-[44px] flex flex-col items-center justify-center ${
+            selectedMode === 'quick'
+              ? "bg-ink-deep border border-accent-gold/50 text-accent-gold"
+              : "bg-transparent border border-ink-medium/40 text-moon-mist hover:border-ink-light/60"
+          }`}
+        >
+          <span className="font-medium">{modeConfig.quick.name}</span>
+          <span className="text-[10px] opacity-60 mt-0.5">{modeConfig.quick.description}</span>
+        </button>
+        <button
+          onClick={() => handleModeSelect('full')}
+          className={`px-4 py-2.5 rounded-full text-sm transition-all duration-300 touch-manipulation min-h-[44px] flex flex-col items-center justify-center ${
+            selectedMode === 'full'
+              ? "bg-ink-deep border border-accent-gold/50 text-accent-gold"
+              : "bg-transparent border border-ink-medium/40 text-moon-mist hover:border-ink-light/60"
+          }`}
+        >
+          <span className="font-medium">{modeConfig.full.name}</span>
+          <span className="text-[10px] opacity-60 mt-0.5">{modeConfig.full.description}</span>
+        </button>
+      </motion.div>
 
       {/* 长按按钮 */}
       <motion.div
